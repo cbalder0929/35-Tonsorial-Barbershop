@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body;
+    color: #f7f2e7;
+    background-color: #080b14;
+    /* Subtle depth + a faint diagonal texture -- a quiet nod to barber-pole
+       stripes without competing with the logo or turning into clutter. */
+    background-image: radial-gradient(
+        ellipse 900px 500px at 50% -10%,
+        rgba(44, 58, 92, 0.5) 0%,
+        rgba(8, 11, 20, 0) 60%
+      ),
+      repeating-linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 2px,
+        transparent 2px,
+        transparent 16px
+      );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+}
+
+@layer components {
+  /* Primary CTA -- solid crimson, the site's one loud color. */
+  .btn-primary {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-crimson-600
+      px-7 py-3 text-sm font-bold text-cream shadow-glow transition-colors
+      duration-200 hover:bg-crimson-500 active:bg-crimson-700;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full border
+      border-navy-600 bg-navy-900/70 px-6 py-3 text-sm font-semibold text-cream backdrop-blur
+      transition-colors duration-200 hover:border-royal-400/70;
+  }
+
+  /* Short accent rule used as a section-header underline. */
+  .rule-facet {
+    @apply h-[3px] w-14 rounded-full bg-crimson-600;
+  }
+
+  .card-glass {
+    @apply rounded-2xl border border-navy-700/80 bg-navy-900/70 backdrop-blur-md;
+  }
+
+  .section-pad {
+    @apply mx-auto w-full max-w-5xl px-5 py-14 sm:px-8 sm:py-20;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-navy-600 bg-navy-900/80 px-3.5 py-2.5 text-sm text-cream
+      placeholder:text-cream-dim/40 outline-none transition-colors focus:border-royal-400/70;
+  }
+}
