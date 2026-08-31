@@ -20,6 +20,7 @@ export const env = {
 
   resendApiKey: read("RESEND_API_KEY"),
   fromEmail: read("FROM_EMAIL"),
+  ownerNotificationEmail: read("OWNER_NOTIFICATION_EMAIL"),
 
   siteUrl: read("NEXT_PUBLIC_SITE_URL") ?? "http://localhost:3000",
   businessTimezone: read("BUSINESS_TIMEZONE") ?? "America/Chicago",

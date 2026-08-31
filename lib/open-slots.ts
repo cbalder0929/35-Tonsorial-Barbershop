@@ -70,15 +70,27 @@ export async function getOpenSlots(
   return { configured: true, days: groupSlotsByDate(slots, config.timezone) };
 }
 
-/** Re-checks a single slot is still open -- used just before INSERT. */
-export async function isSlotStillOpen(startsAtIso: string): Promise<boolean> {
+/**
+ * Re-checks a single slot is still open -- used just before INSERT, and
+ * before rescheduling (where excludeBookingId lets a booking ignore its own
+ * current slot while checking the new one).
+ */
+export async function isSlotStillOpen(
+  startsAtIso: string,
+  excludeBookingId?: string
+): Promise<boolean> {
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
+  let query = supabase
     .from("bookings")
     .select("id")
     .eq("starts_at", startsAtIso)
-    .in("status", ["booked", "confirmed"])
-    .limit(1);
+    .in("status", ["booked", "confirmed"]);
+
+  if (excludeBookingId) {
+    query = query.neq("id", excludeBookingId);
+  }
+
+  const { data, error } = await query.limit(1);
 
   if (error) {
     throw new Error(`Failed to re-check slot: ${error.message}`);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { config } from "@/lib/config";
 import { DatePicker } from "./DatePicker";
@@ -23,6 +23,7 @@ type Step = "loading" | "unconfigured" | "picking" | "form" | "success";
 const NO_PREFERENCE = "no-preference";
 
 export function BookingSection() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [step, setStep] = useState<Step>("loading");
   const [days, setDays] = useState<SlotsByDate[]>([]);
   const [service, setService] = useState<string>(config.pricing[0]?.id ?? "");
@@ -66,6 +67,12 @@ export function BookingSection() {
     loadAvailability();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (step === "success") {
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [step]);
 
   const dateOptions = useMemo(
     () => days.map((d) => ({ date: d.date, dateLabel: d.dateLabel, slotCount: d.slots.length })),
@@ -122,15 +129,11 @@ export function BookingSection() {
   }
 
   return (
-    <section id="booking" className="section-pad">
+    <section id="booking" ref={sectionRef} className="section-pad scroll-mt-24">
       <span className="rule-facet mb-5" />
       <h2 className="font-display text-3xl uppercase tracking-wide text-cream sm:text-4xl">
         Book Your Chair
       </h2>
-      <p className="mt-2 text-sm text-cream-dim">
-        {config.booking.sessionLengthMinutes}-minute appointments &middot; pick a service, a
-        barber, and a time
-      </p>
 
       <div className="mt-8">
         {step === "loading" && (

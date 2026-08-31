@@ -61,4 +61,14 @@
     @apply w-full rounded-lg border border-navy-600 bg-navy-900/80 px-3.5 py-2.5 text-sm text-cream
       placeholder:text-cream-dim/40 outline-none transition-colors focus:border-royal-400/70;
   }
+
+  /* Keeps horizontal scroll usable while hiding the scrollbar track/thumb. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

@@ -1,32 +1,89 @@
-// Wrapper for every outgoing email: header with business name, footer with
-// contact info. CUSTOMIZE: colours and copy below to re-brand.
+// Wrapper for every outgoing email. Mirrors the live site's design system
+// (see tailwind.config.ts + app/globals.css): dark navy ground, a crimson
+// accent, royal-blue secondary accent, gold for standout details, cream
+// text, Bebas Neue headlines over Inter body copy. CUSTOMIZE: colours and
+// copy below to re-brand.
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { config } from "@/lib/config";
+
+export const BRAND = {
+  navy950: "#080b14",
+  navy900: "#0e1526",
+  navy800: "#151f38",
+  navy700: "#202b48",
+  navy600: "#2c3a5c",
+  crimson600: "#93222d",
+  crimson500: "#ac2b38",
+  royal500: "#33518c",
+  royal400: "#4a6bab",
+  gold: "#c9a227",
+  cream: "#f7f2e7",
+  creamDim: "#c9c2b0",
+};
+
+const DISPLAY_FONT =
+  "'Bebas Neue','Arial Narrow',Arial,sans-serif";
+const BODY_FONT =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif";
+
+export const LOGO_CID = "brand-logo";
+
+/**
+ * The logo as an inline CID attachment -- not a hosted URL, so it renders in
+ * a real inbox even though the site itself isn't deployed yet (a localhost
+ * URL would show as a broken image to anyone but the sender's own machine).
+ * Merge this into every outgoing email's `attachments` array.
+ */
+export function logoAttachment(): { filename: string; content: string; content_id: string } {
+  const bytes = readFileSync(join(process.cwd(), "emails/assets/logo.png"));
+  return {
+    filename: "logo.png",
+    content: bytes.toString("base64"),
+    content_id: LOGO_CID,
+  };
+}
 
 export function emailShell(bodyHtml: string): string {
   return `
 <!doctype html>
 <html>
-  <body style="margin:0;padding:0;background:#0a0a0c;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0c;padding:32px 16px;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>${config.business.name}</title>
+    <style>
+      @media (max-width: 480px) {
+        .container { width: 100% !important; }
+        .pad { padding-left: 20px !important; padding-right: 20px !important; }
+        .btn-stack { display: block !important; width: 100% !important; margin: 0 0 10px 0 !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:${BRAND.navy950};font-family:${BODY_FONT};">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.navy950};padding:36px 16px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" style="max-width:520px;background:#141417;border-radius:16px;overflow:hidden;border:1px solid #26262d;">
+          <table role="presentation" class="container" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:560px;background:${BRAND.navy900};border-radius:16px;overflow:hidden;border:1px solid ${BRAND.navy700};">
             <tr>
-              <td style="padding:28px 32px;background:linear-gradient(90deg,#e8407f 0%,#f2a93b 45%,#3fc9d6 100%);">
-                <span style="font-size:20px;font-weight:800;letter-spacing:-0.02em;color:#0a0a0c;">
+              <td align="center" style="padding:32px 32px 24px;background:${BRAND.navy950};border-bottom:1px solid ${BRAND.navy700};">
+                <img src="cid:${LOGO_CID}" width="96" height="64" alt="${config.business.name}" style="display:block;margin:0 auto 12px;border:0;object-fit:contain;" />
+                <div style="font-family:${DISPLAY_FONT};text-transform:uppercase;letter-spacing:0.04em;font-size:22px;color:${BRAND.cream};">
                   ${config.business.name}
-                </span>
+                </div>
+                <div style="width:44px;height:3px;background:${BRAND.crimson600};border-radius:999px;margin:12px auto 0;"></div>
               </td>
             </tr>
             <tr>
-              <td style="padding:32px;color:#e8e8ec;font-size:15px;line-height:1.6;">
+              <td class="pad" style="padding:32px;color:${BRAND.cream};font-size:15px;line-height:1.6;">
                 ${bodyHtml}
               </td>
             </tr>
             <tr>
-              <td style="padding:24px 32px;border-top:1px solid #26262d;color:#8a8a94;font-size:13px;line-height:1.6;">
-                <strong style="color:#c6c6cf;">${config.business.name}</strong><br />
+              <td class="pad" style="padding:22px 32px;border-top:1px solid ${BRAND.navy700};color:${BRAND.creamDim};font-size:12.5px;line-height:1.7;">
+                <strong style="color:${BRAND.cream};letter-spacing:0.02em;">${config.business.name}</strong><br />
                 ${config.business.address.line1}, ${config.business.address.line2}<br />
                 ${config.business.phoneDisplay} &middot; ${config.business.email}
               </td>
@@ -39,6 +96,31 @@ export function emailShell(bodyHtml: string): string {
 </html>`.trim();
 }
 
-export function actionButton(label: string, href: string, color: string): string {
-  return `<a href="${href}" style="display:inline-block;padding:12px 24px;background:${color};color:#0a0a0c;font-weight:700;text-decoration:none;border-radius:999px;font-size:14px;">${label}</a>`;
+type ButtonVariant = "primary" | "secondary";
+
+/** Pill button matching .btn-primary / .btn-secondary on the live site. */
+export function actionButton(
+  label: string,
+  href: string,
+  variant: ButtonVariant = "primary"
+): string {
+  const styles =
+    variant === "primary"
+      ? `background:${BRAND.crimson600};color:${BRAND.cream};border:1px solid ${BRAND.crimson600};`
+      : `background:${BRAND.navy900};color:${BRAND.cream};border:1px solid ${BRAND.navy600};`;
+
+  return `<a href="${href}" class="btn-stack" style="display:inline-block;padding:13px 26px;${styles}font-weight:700;font-size:14px;text-decoration:none;border-radius:999px;">${label}</a>`;
+}
+
+/** Card-glass style detail panel (date/time, or a label/value table). */
+export function detailCard(innerHtml: string): string {
+  return `<table role="presentation" width="100%" style="width:100%;background:${BRAND.navy800};border:1px solid ${BRAND.navy700};border-radius:12px;margin:0 0 20px;"><tr><td style="padding:18px 20px;">${innerHtml}</td></tr></table>`;
+}
+
+export function detailRow(label: string, value: string, isLast = false): string {
+  const border = isLast ? "" : `border-bottom:1px solid ${BRAND.navy700};`;
+  return `<tr>
+    <td style="padding:8px 0;${border}color:${BRAND.creamDim};font-size:13px;width:130px;vertical-align:top;">${label}</td>
+    <td style="padding:8px 0;${border}color:${BRAND.cream};font-size:14px;font-weight:600;vertical-align:top;">${value}</td>
+  </tr>`;
 }

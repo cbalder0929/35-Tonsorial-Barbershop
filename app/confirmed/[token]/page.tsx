@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function ConfirmedPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
   if (!isSupabaseConfigured()) {
     return (
@@ -22,7 +22,8 @@ export default async function ConfirmedPage({
     );
   }
 
-  const result = await confirmBooking(params.token);
+  const { token } = await params;
+  const result = await confirmBooking(token);
 
   if (!result.ok) {
     return (

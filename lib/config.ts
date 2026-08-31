@@ -15,8 +15,7 @@ export const config = {
   business: {
     name: "35th Tonsorial Barbershop",
     shortName: "35th Tonsorial",
-    // TODO: no public email on record -- replace with the shop's real inbox.
-    email: "book@35thtonsorial.com",
+    email: "squirreltonsorial@gmail.com",
     phone: "+17738887048",
     phoneDisplay: "(773) 888-7048",
     address: {
@@ -43,60 +42,31 @@ export const config = {
     sessionLengthMinutes: 45,
     minNoticeHours: 4,
     maxAdvanceDays: 21,
-    // TODO: confirmed data point is "Opens 10 AM Fri" -- verify the rest of
-    // the week against the shop's actual posted hours before going live.
     weeklyRules: [
-      { dayOfWeek: 2, startTime: "10:00", endTime: "19:00" }, // Tue
-      { dayOfWeek: 3, startTime: "10:00", endTime: "19:00" }, // Wed
-      { dayOfWeek: 4, startTime: "10:00", endTime: "19:00" }, // Thu
-      { dayOfWeek: 5, startTime: "10:00", endTime: "19:00" }, // Fri
-      { dayOfWeek: 6, startTime: "09:00", endTime: "17:00" }, // Sat
+      { dayOfWeek: 0, startTime: "09:00", endTime: "12:00" }, // Sun
+      { dayOfWeek: 1, startTime: "10:00", endTime: "18:00" }, // Mon
+      { dayOfWeek: 2, startTime: "10:00", endTime: "18:00" }, // Tue
+      { dayOfWeek: 3, startTime: "10:00", endTime: "18:00" }, // Wed
+      { dayOfWeek: 4, startTime: "10:00", endTime: "18:00" }, // Thu
+      { dayOfWeek: 5, startTime: "10:00", endTime: "18:30" }, // Fri
+      { dayOfWeek: 6, startTime: "09:00", endTime: "16:00" }, // Sat
     ] satisfies WeeklyRule[],
   },
 
-  // TODO: placeholder pricing -- confirm real prices with the shop before launch.
   pricing: [
     {
       id: "haircut",
       name: "Haircut",
       description: "Precision fade, taper, or scissor cut with a clean finish.",
-      price: 35,
-      premium: false,
-    },
-    {
-      id: "beard",
-      name: "Beard Trim",
-      description: "Line-up and shape with a hot towel finish.",
-      price: 20,
+      price: 55,
       premium: false,
     },
     {
       id: "combo",
       name: "Haircut + Beard",
       description: "Full cut and beard combo -- our most popular service.",
-      price: 50,
+      price: 70,
       premium: false,
-    },
-    {
-      id: "kids",
-      name: "Kids Cut",
-      description: "For clients 12 and under.",
-      price: 25,
-      premium: false,
-    },
-    {
-      id: "lineup",
-      name: "Line-Up",
-      description: "A quick edge-up between full cuts.",
-      price: 15,
-      premium: false,
-    },
-    {
-      id: "hot-towel-shave",
-      name: "Hot Towel Shave",
-      description: "Traditional straight-razor shave with hot towel prep.",
-      price: 30,
-      premium: true,
     },
   ],
 

@@ -121,6 +121,44 @@ export async function createCalendarEvent(
   return data.id;
 }
 
+export type UpdateEventInput = {
+  startsAt: Date;
+  endsAt: Date;
+  summary?: string;
+  description?: string;
+};
+
+/** Updates an existing event in place when a booking is rescheduled. */
+export async function updateCalendarEvent(
+  eventId: string,
+  input: UpdateEventInput
+): Promise<void> {
+  const accessToken = await getAccessToken();
+
+  const body: Record<string, unknown> = {
+    start: { dateTime: input.startsAt.toISOString() },
+    end: { dateTime: input.endsAt.toISOString() },
+  };
+  if (input.summary !== undefined) body.summary = input.summary;
+  if (input.description !== undefined) body.description = input.description;
+
+  const res = await fetch(
+    `${CALENDAR_API}/calendars/${encodeURIComponent(env.bookingCalendarId!)}/events/${eventId}?sendUpdates=all`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Update calendar event failed: ${res.status} ${await res.text()}`);
+  }
+}
+
 /** Deletes an event when a booking is cancelled -- frees the slot for reuse. */
 export async function deleteCalendarEvent(eventId: string): Promise<void> {
   const accessToken = await getAccessToken();

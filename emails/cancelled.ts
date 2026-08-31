@@ -1,5 +1,5 @@
 import { config } from "@/lib/config";
-import { emailShell, actionButton } from "./shell";
+import { emailShell, actionButton, detailCard, detailRow, BRAND } from "./shell";
 
 export type CancelledEmailData = {
   firstName: string;
@@ -13,14 +13,15 @@ export function cancelledEmail(data: CancelledEmailData): {
   html: string;
 } {
   const body = `
-    <p style="font-size:17px;font-weight:700;color:#fff;margin:0 0 16px;">Your booking is cancelled</p>
-    <p style="margin:0 0 20px;">
-      Your ${data.dateLabel} at ${data.timeLabel} appointment at ${config.business.name} has been cancelled.
-      The chair is open for someone else now.
-    </p>
-    <p style="margin:0 0 24px;">Whenever you're ready, we'd love to see you in the chair.</p>
+    <p style="font-family:'Bebas Neue','Arial Narrow',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.03em;font-size:20px;color:${BRAND.cream};margin:0 0 16px;">Your booking is cancelled</p>
+    ${detailCard(`
+      <table role="presentation" width="100%">
+        ${detailRow("Was", `${data.dateLabel} at ${data.timeLabel}`, true)}
+      </table>
+    `)}
+    <p style="margin:0 0 24px;color:${BRAND.creamDim};">The chair is open for someone else now. Whenever you're ready, we'd love to see you back.</p>
     <p style="margin:0;">
-      ${actionButton("Book Again", data.bookAgainUrl, "#f2a93b")}
+      ${actionButton("Book Again", data.bookAgainUrl, "primary")}
     </p>
   `;
 

@@ -5,10 +5,11 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const result = await cancelBooking(params.token);
+    const { token } = await params;
+    const result = await cancelBooking(token);
     if (!result.ok) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }

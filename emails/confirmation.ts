@@ -1,5 +1,5 @@
 import { config } from "@/lib/config";
-import { emailShell, actionButton } from "./shell";
+import { emailShell, actionButton, detailCard, detailRow, BRAND } from "./shell";
 
 export type ConfirmationEmailData = {
   firstName: string;
@@ -14,20 +14,19 @@ export function confirmationEmail(data: ConfirmationEmailData): {
   html: string;
 } {
   const body = `
-    <p style="font-size:17px;font-weight:700;color:#fff;margin:0 0 16px;">You're booked, ${data.firstName}!</p>
-    <p style="margin:0 0 20px;">Your chair time at ${config.business.name} is set for:</p>
-    <table role="presentation" style="width:100%;background:#1a1a1f;border-radius:12px;margin:0 0 20px;">
-      <tr><td style="padding:16px 20px;font-size:16px;color:#fff;font-weight:600;">
-        ${data.dateLabel} at ${data.timeLabel}
-      </td></tr>
-    </table>
-    <p style="margin:0 0 8px;"><strong style="color:#fff;">Where:</strong> ${config.business.address.line1}, ${config.business.address.line2}</p>
-    <p style="margin:0 0 20px;"><strong style="color:#fff;">What to bring:</strong> Just yourself -- and a reference photo if you have a style in mind.</p>
-    <p style="margin:0 0 24px;">A calendar invite (.ics) is attached. Need to make a change?</p>
+    <p style="font-family:'Bebas Neue','Arial Narrow',Arial,sans-serif;text-transform:uppercase;letter-spacing:0.03em;font-size:20px;color:${BRAND.cream};margin:0 0 16px;">You're booked, ${data.firstName}</p>
+    <p style="margin:0 0 20px;color:${BRAND.creamDim};">Your chair time at ${config.business.name} is set for:</p>
+    ${detailCard(`
+      <table role="presentation" width="100%">
+        ${detailRow("When", `${data.dateLabel} at ${data.timeLabel}`)}
+        ${detailRow("Where", `${config.business.address.line1}, ${config.business.address.line2}`, true)}
+      </table>
+    `)}
+    <p style="margin:0 0 24px;color:${BRAND.creamDim};">A calendar invite (.ics) is attached. Need to make a change?</p>
     <p style="margin:0;">
-      ${actionButton("Confirm", data.confirmUrl, "#3fc9d6")}
+      ${actionButton("Confirm", data.confirmUrl, "primary")}
       &nbsp;&nbsp;
-      ${actionButton("Cancel", data.cancelUrl, "#e8407f")}
+      ${actionButton("Cancel", data.cancelUrl, "secondary")}
     </p>
   `;
 

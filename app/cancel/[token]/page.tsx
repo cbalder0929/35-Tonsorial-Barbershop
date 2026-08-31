@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function CancelPage({
   params,
 }: {
-  params: { token: string };
+  params: Promise<{ token: string }>;
 }) {
   if (!isSupabaseConfigured()) {
     return (
@@ -23,7 +23,8 @@ export default async function CancelPage({
     );
   }
 
-  const booking = await getBookingByToken(params.token);
+  const { token } = await params;
+  const booking = await getBookingByToken(token);
 
   if (!booking) {
     return (
@@ -43,7 +44,7 @@ export default async function CancelPage({
   return (
     <Shell>
       <CancelSession
-        token={params.token}
+        token={token}
         dateLabel={dateLabel}
         timeLabel={timeLabel}
         alreadyCancelled={booking.status === "cancelled"}

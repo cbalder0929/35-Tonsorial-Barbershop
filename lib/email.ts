@@ -8,7 +8,8 @@ export type SendEmailInput = {
   to: string;
   subject: string;
   html: string;
-  attachments?: { filename: string; content: string }[]; // content = base64
+  // content = base64. content_id enables `<img src="cid:...">` inline references.
+  attachments?: { filename: string; content: string; content_id?: string }[];
 };
 
 export type SendEmailResult =

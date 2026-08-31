@@ -21,6 +21,12 @@ export const bookingSchema = z.object({
 
 export type BookingInput = z.infer<typeof bookingSchema>;
 
+export const rescheduleSchema = z.object({
+  startsAt: z.string().datetime({ message: "Invalid time slot" }),
+});
+
+export type RescheduleInput = z.infer<typeof rescheduleSchema>;
+
 export const availabilityQuerySchema = z.object({
   from: z
     .string()

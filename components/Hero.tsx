@@ -27,10 +27,6 @@ export function Hero() {
           {config.business.name}
         </h1>
 
-        <p className="mt-3 max-w-sm text-sm text-cream-dim sm:max-w-md sm:text-base">
-          {config.copy.hero.tagline}
-        </p>
-
         <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <a href="#booking" className="btn-primary w-full sm:w-auto">
             {config.copy.hero.ctaLabel}
