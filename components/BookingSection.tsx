@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { config } from "@/lib/config";
+import { glowClass } from "@/lib/glow";
 import { DatePicker } from "./DatePicker";
 import { TimeSlots } from "./TimeSlots";
 import { BookingForm, type BookingFormValues } from "./BookingForm";
@@ -26,8 +27,8 @@ export function BookingSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [step, setStep] = useState<Step>("loading");
   const [days, setDays] = useState<SlotsByDate[]>([]);
-  const [service, setService] = useState<string>(config.pricing[0]?.id ?? "");
-  const [barber, setBarber] = useState<string>(NO_PREFERENCE);
+  const [service, setService] = useState<string | null>(config.pricing[0]?.id ?? null);
+  const [barber, setBarber] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedStartsAt, setSelectedStartsAt] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,7 +56,6 @@ export function BookingSection() {
 
       const daysWithSlots = data.days.filter((d) => d.slots.length > 0);
       setDays(daysWithSlots);
-      setSelectedDate((prev) => prev ?? daysWithSlots[0]?.date ?? null);
       setStep("picking");
     } catch {
       setLoadError("Couldn't load availability. Please refresh and try again.");
@@ -82,6 +82,9 @@ export function BookingSection() {
   const activeDay = days.find((d) => d.date === selectedDate);
   const timeSlots = activeDay?.slots ?? [];
   const selectedServiceName = config.pricing.find((p) => p.id === service)?.name;
+
+  const glowLevel =
+    step === "form" ? 5 : [service, barber, selectedDate, selectedStartsAt].filter(Boolean).length;
 
   async function handleFormSubmit(values: BookingFormValues) {
     if (!selectedStartsAt) return;
@@ -129,10 +132,10 @@ export function BookingSection() {
   }
 
   return (
-    <section id="booking" ref={sectionRef} className="section-pad scroll-mt-24">
+    <section id="booking" ref={sectionRef} className="section-pad scroll-mt-24 py-8 sm:py-12">
       <span className="rule-facet mb-5" />
       <h2 className="font-display text-3xl uppercase tracking-wide text-cream sm:text-4xl">
-        Book Your Chair
+        Book Your Haircut
       </h2>
 
       <div className="mt-8">
@@ -161,71 +164,84 @@ export function BookingSection() {
                 options={config.pricing.map((p) => ({ value: p.id, label: `${p.name} -- $${p.price}` }))}
                 value={service}
                 onChange={setService}
+                glow={glowLevel}
               />
             </BookingStep>
 
-            <BookingStep label="2. Barber">
-              <PillGroup
-                options={[
-                  { value: NO_PREFERENCE, label: "No Preference" },
-                  ...config.team.map((t) => ({ value: t.id, label: t.name })),
-                ]}
-                value={barber}
-                onChange={setBarber}
-              />
-            </BookingStep>
+            {service && (
+              <BookingStep label="2. Barber" className="step-enter">
+                <PillGroup
+                  options={[
+                    { value: NO_PREFERENCE, label: "No Preference" },
+                    ...config.team.map((t) => ({ value: t.id, label: t.name })),
+                  ]}
+                  value={barber}
+                  onChange={setBarber}
+                  glow={glowLevel}
+                />
+              </BookingStep>
+            )}
 
-            {days.length === 0 ? (
-              <p className="py-6 text-center text-cream-dim">
-                No open times in the next {config.booking.maxAdvanceDays} days -- check back soon
-                or call {config.business.phoneDisplay}.
-              </p>
-            ) : (
-              <>
-                <BookingStep label="3. Date">
-                  <DatePicker
-                    dates={dateOptions}
-                    selectedDate={selectedDate}
-                    onSelect={(date) => {
-                      setSelectedDate(date);
-                      setSelectedStartsAt(null);
-                      setStep("picking");
-                    }}
-                  />
-                </BookingStep>
+            {service && barber && (
+              <div className="step-enter">
+                {days.length === 0 ? (
+                  <p className="py-6 text-center text-cream-dim">
+                    No open times in the next {config.booking.maxAdvanceDays} days -- check back
+                    soon or call {config.business.phoneDisplay}.
+                  </p>
+                ) : (
+                  <>
+                    <BookingStep label="3. Date">
+                      <DatePicker
+                        dates={dateOptions}
+                        selectedDate={selectedDate}
+                        onSelect={(date) => {
+                          setSelectedDate(date);
+                          setSelectedStartsAt(null);
+                          setStep("picking");
+                        }}
+                        glow={glowLevel}
+                      />
+                    </BookingStep>
 
-                <BookingStep label="4. Time">
-                  <TimeSlots
-                    slots={timeSlots}
-                    selectedStartsAt={selectedStartsAt}
-                    onSelect={(startsAt) => {
-                      setSelectedStartsAt(startsAt);
-                      setStep("form");
-                      setSubmitError(null);
-                    }}
-                  />
-                </BookingStep>
+                    {selectedDate && (
+                      <BookingStep label="4. Time" className="step-enter">
+                        <TimeSlots
+                          slots={timeSlots}
+                          selectedStartsAt={selectedStartsAt}
+                          onSelect={(startsAt) => {
+                            setSelectedStartsAt(startsAt);
+                            setStep("form");
+                            setSubmitError(null);
+                          }}
+                          glow={glowLevel}
+                        />
+                      </BookingStep>
+                    )}
 
-                {step === "form" && selectedStartsAt && (
-                  <div className="mt-8 border-t border-navy-700/80 pt-8">
-                    <p className="mb-5 text-sm font-semibold uppercase tracking-wide text-cream-dim">
-                      5. Your Info
-                    </p>
-                    <p className="mb-5 text-sm text-cream-dim">
-                      Locking in{" "}
-                      <strong className="text-cream">
-                        {selectedServiceName} -- {activeDay?.dateLabel} at{" "}
-                        {timeSlots.find((s) => s.startsAt === selectedStartsAt)?.timeLabel}
-                      </strong>
-                    </p>
-                    <BookingForm
-                      onSubmit={handleFormSubmit}
-                      submitting={submitting}
-                      submitError={submitError}
-                    />
-                  </div>
+                    {step === "form" && selectedStartsAt && (
+                      <div className="step-enter mt-8 border-t border-navy-700/80 pt-8">
+                        <p className="mb-5 text-sm font-semibold uppercase tracking-wide text-cream-dim">
+                          5. Your Info
+                        </p>
+                        <p className="mb-5 text-sm text-cream-dim">
+                          Locking in{" "}
+                          <strong className="text-cream">
+                            {selectedServiceName} -- {activeDay?.dateLabel} at{" "}
+                            {timeSlots.find((s) => s.startsAt === selectedStartsAt)?.timeLabel}
+                          </strong>
+                        </p>
+                        <BookingForm
+                          onSubmit={handleFormSubmit}
+                          submitting={submitting}
+                          submitError={submitError}
+                          glow={glowLevel}
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
-              </>
+              </div>
             )}
           </div>
         )}
@@ -242,9 +258,17 @@ export function BookingSection() {
   );
 }
 
-function BookingStep({ label, children }: { label: string; children: React.ReactNode }) {
+function BookingStep({
+  label,
+  children,
+  className = "",
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="mb-6">
+    <div className={`mb-6 ${className}`}>
       <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-cream-dim">
         {label}
       </p>
@@ -257,10 +281,12 @@ function PillGroup({
   options,
   value,
   onChange,
+  glow,
 }: {
   options: { value: string; label: string }[];
-  value: string;
+  value: string | null;
   onChange: (value: string) => void;
+  glow: number;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -273,7 +299,7 @@ function PillGroup({
             onClick={() => onChange(opt.value)}
             className={`min-h-[44px] rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
               isSelected
-                ? "border-transparent bg-crimson-600 text-cream"
+                ? `border-transparent bg-crimson-600 text-cream ${glowClass(glow)}`
                 : "border-navy-600 bg-navy-900/60 text-cream-dim hover:border-royal-400/60"
             }`}
           >

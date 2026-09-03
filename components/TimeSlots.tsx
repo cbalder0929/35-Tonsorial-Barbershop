@@ -1,5 +1,7 @@
 "use client";
 
+import { glowClass } from "@/lib/glow";
+
 export type TimeSlotOption = {
   startsAt: string;
   timeLabel: string;
@@ -9,9 +11,10 @@ type TimeSlotsProps = {
   slots: TimeSlotOption[];
   selectedStartsAt: string | null;
   onSelect: (startsAt: string) => void;
+  glow?: number;
 };
 
-export function TimeSlots({ slots, selectedStartsAt, onSelect }: TimeSlotsProps) {
+export function TimeSlots({ slots, selectedStartsAt, onSelect, glow = 1 }: TimeSlotsProps) {
   if (slots.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-cream-dim">
@@ -31,7 +34,7 @@ export function TimeSlots({ slots, selectedStartsAt, onSelect }: TimeSlotsProps)
             onClick={() => onSelect(slot.startsAt)}
             className={`min-h-[44px] rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
               isSelected
-                ? "border-transparent bg-crimson-600 text-cream"
+                ? `border-transparent bg-crimson-600 text-cream ${glowClass(glow)}`
                 : "border-navy-600 bg-navy-900/60 text-cream-dim hover:border-royal-400/60"
             }`}
           >

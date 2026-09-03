@@ -5,7 +5,7 @@ import { config } from "@/lib/config";
 // swap it. It floats with a soft crimson glow and drop shadow for depth.
 export function Hero() {
   return (
-    <section id="hero" className="relative overflow-hidden px-5 pb-12 pt-8 sm:px-8 sm:pb-20 sm:pt-14">
+    <section id="hero" className="relative overflow-hidden px-5 pb-6 pt-6 sm:px-8 sm:pb-10 sm:pt-8">
       <div
         aria-hidden
         className="pointer-events-none absolute left-1/2 top-10 h-72 w-72 -translate-x-1/2 rounded-full bg-crimson-600/25 blur-[90px] sm:top-6 sm:h-[26rem] sm:w-[26rem]"
@@ -23,26 +23,6 @@ export function Hero() {
           />
         </div>
 
-        <h1 className="mt-1 font-display text-2xl uppercase tracking-wide text-cream sm:text-4xl lg:text-5xl">
-          {config.business.name}
-        </h1>
-
-        <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-          <a href="#booking" className="btn-primary w-full sm:w-auto">
-            {config.copy.hero.ctaLabel}
-          </a>
-          <a href="#pricing" className="btn-secondary w-full sm:w-auto">
-            {config.copy.hero.secondaryCtaLabel}
-          </a>
-        </div>
-
-        <p className="mt-5 text-xs text-cream-dim/70">
-          <span aria-hidden className="text-gold">
-            {"★★★★★"}
-          </span>{" "}
-          {config.business.googleRating.toFixed(1)} on Google &middot; {config.business.googleReviewCount}{" "}
-          reviews
-        </p>
       </div>
     </section>
   );

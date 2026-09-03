@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { bookingSchema } from "@/lib/validation";
 import { formatAsYouType } from "@/lib/phone";
+import { glowClass } from "@/lib/glow";
 
 // Service and barber are chosen a step earlier in BookingSection -- this
 // form only collects contact details.
@@ -15,9 +16,10 @@ type BookingFormProps = {
   onSubmit: (values: BookingFormValues) => void;
   submitting: boolean;
   submitError: string | null;
+  glow: number;
 };
 
-export function BookingForm({ onSubmit, submitting, submitError }: BookingFormProps) {
+export function BookingForm({ onSubmit, submitting, submitError, glow }: BookingFormProps) {
   const {
     register,
     handleSubmit,
@@ -96,7 +98,11 @@ export function BookingForm({ onSubmit, submitting, submitError }: BookingFormPr
         </p>
       )}
 
-      <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
+      <button
+        type="submit"
+        disabled={submitting}
+        className={`btn-primary w-full disabled:opacity-60 ${glowClass(glow)}`}
+      >
         {submitting ? "Booking..." : "Confirm Appointment"}
       </button>
     </form>
