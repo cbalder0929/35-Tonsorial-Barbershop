@@ -139,9 +139,7 @@ export function BookingSection() {
       </h2>
 
       <div className="mt-8">
-        {step === "loading" && (
-          <p className="py-10 text-center text-cream-dim">Loading availability...</p>
-        )}
+        {step === "loading" && <BookingSkeleton />}
 
         {step === "unconfigured" && (
           <div className="card-glass px-8 py-10 text-center">
@@ -256,6 +254,37 @@ export function BookingSection() {
       </div>
     </section>
   );
+}
+
+function BookingSkeleton() {
+  return (
+    <div className="card-glass p-5 sm:p-8" aria-hidden>
+      <SkeletonStepLabel />
+      <div className="mb-6 flex flex-wrap gap-2">
+        <div className="skeleton h-11 w-28 rounded-xl" />
+        <div className="skeleton h-11 w-36 rounded-xl" />
+        <div className="skeleton h-11 w-24 rounded-xl" />
+      </div>
+
+      <SkeletonStepLabel />
+      <div className="mb-6 flex flex-wrap gap-2">
+        <div className="skeleton h-11 w-32 rounded-xl" />
+        <div className="skeleton h-11 w-28 rounded-xl" />
+        <div className="skeleton h-11 w-28 rounded-xl" />
+      </div>
+
+      <SkeletonStepLabel />
+      <div className="flex flex-wrap gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="skeleton h-16 w-16 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SkeletonStepLabel() {
+  return <div className="skeleton mb-2.5 h-3 w-20 rounded-full" />;
 }
 
 function BookingStep({

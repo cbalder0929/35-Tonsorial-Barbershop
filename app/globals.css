@@ -41,6 +41,15 @@
   }
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+
 @layer components {
   /* Progressive-disclosure booking steps -- each newly revealed step eases
      in so the growing form doesn't feel like a layout jolt. */
@@ -95,6 +104,22 @@
 
   .card-glass {
     @apply rounded-2xl border border-navy-700/80 bg-navy-900/70 backdrop-blur-md;
+  }
+
+  /* Booking-section loading placeholder -- a soft shimmer sweeps across
+     navy blocks so the flow doesn't feel frozen while availability loads. */
+  .skeleton {
+    background: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(255, 255, 255, 0.06) 35%,
+      rgba(255, 255, 255, 0.14) 50%,
+      rgba(255, 255, 255, 0.06) 65%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+    background-color: rgba(255, 255, 255, 0.06);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
   }
 
   .section-pad {
