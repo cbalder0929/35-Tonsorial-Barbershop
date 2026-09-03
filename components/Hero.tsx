@@ -6,11 +6,6 @@ import { config } from "@/lib/config";
 export function Hero() {
   return (
     <section id="hero" className="relative overflow-hidden px-5 pb-6 pt-6 sm:px-8 sm:pb-10 sm:pt-8">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-10 h-72 w-72 -translate-x-1/2 rounded-full bg-crimson-600/25 blur-[90px] sm:top-6 sm:h-[26rem] sm:w-[26rem]"
-      />
-
       <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
         <div className="relative -mb-2">
           <Image
