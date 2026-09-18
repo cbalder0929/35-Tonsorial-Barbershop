@@ -33,8 +33,3 @@ export function formatAsYouType(input: string): string {
   if (d.length < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
-
-/** Formats an E.164 number for display: +15551234567 -> (555) 123-4567 */
-export function formatE164ForDisplay(e164: string): string {
-  return formatAsYouType(e164);
-}

@@ -3,19 +3,11 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { config } from "@/lib/config";
+import type { SlotsByDate } from "@/lib/availability";
+import type { OpenSlotsResult as AvailabilityResponse } from "@/lib/open-slots";
 import { StatusCard } from "./StatusCard";
 import { DatePicker } from "./DatePicker";
 import { TimeSlots } from "./TimeSlots";
-
-type SlotsByDate = {
-  date: string;
-  dateLabel: string;
-  slots: { startsAt: string; timeLabel: string }[];
-};
-
-type AvailabilityResponse =
-  | { configured: false }
-  | { configured: true; days: SlotsByDate[] };
 
 type CancelSessionProps = {
   token: string;

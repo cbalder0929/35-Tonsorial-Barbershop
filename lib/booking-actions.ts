@@ -4,12 +4,17 @@ import { toZonedTime } from "date-fns-tz";
 import { config } from "./config";
 import { getSupabaseAdmin, type BookingRow } from "./supabase";
 import { isGoogleConfigured } from "./env";
-import { deleteCalendarEvent, updateCalendarEvent } from "./google-calendar";
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "./google-calendar";
 import { isSlotStillOpen } from "./open-slots";
 import {
+  sendConfirmationEmail,
+  sendConfirmationSms,
+  sendAdminNotification,
   sendCancelledEmail,
+  sendCancelledSms,
   sendAdminCancelledNotification,
   sendRescheduledEmail,
+  sendRescheduledSms,
   sendAdminRescheduledNotification,
 } from "./notifications";
 
@@ -24,6 +29,70 @@ export type RescheduleResult =
 /** Read-only lookup, used by the confirm/cancel pages to render booking details. */
 export async function getBookingByToken(token: string): Promise<BookingRow | null> {
   return findByToken(token);
+}
+
+/**
+ * Runs the "this appointment is really happening" side effects: calendar
+ * event, confirmation email/SMS, admin alert. Called immediately after
+ * insert when Stripe isn't configured (pay-at-chair), and from the Stripe
+ * webhook once a deposit is actually paid -- never before, so an abandoned
+ * checkout never produces a calendar event or a "you're booked" message.
+ * Best-effort and safe to call more than once (createCalendarEvent is
+ * skipped if the booking already has a google_event_id).
+ */
+export async function finalizeConfirmedBooking(booking: BookingRow): Promise<BookingRow> {
+  let current = booking;
+  const supabase = getSupabaseAdmin();
+
+  if (isGoogleConfigured() && !current.google_event_id) {
+    try {
+      const eventId = await createCalendarEvent({
+        summary: `${config.business.shortName} -- ${current.first_name} ${current.last_name}`,
+        description: [
+          `Service: ${current.goal ?? "n/a"}`,
+          `Preferred barber: ${current.preferred_barber ?? "no preference"}`,
+          current.notes ? `Notes: ${current.notes}` : null,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+        location: `${config.business.address.line1}, ${config.business.address.line2}`,
+        startsAt: new Date(current.starts_at),
+        endsAt: new Date(current.ends_at),
+        attendeeEmail: current.email,
+        attendeeName: `${current.first_name} ${current.last_name}`,
+      });
+
+      const { data: updated } = await supabase
+        .from("bookings")
+        .update({ google_event_id: eventId })
+        .eq("id", current.id)
+        .select("*")
+        .single();
+      if (updated) current = updated as BookingRow;
+    } catch (err) {
+      console.error("createCalendarEvent failed:", err);
+    }
+  }
+
+  try {
+    await sendConfirmationEmail(current);
+  } catch (err) {
+    console.error("sendConfirmationEmail failed:", err);
+  }
+
+  try {
+    await sendConfirmationSms(current);
+  } catch (err) {
+    console.error("sendConfirmationSms failed:", err);
+  }
+
+  try {
+    await sendAdminNotification(current);
+  } catch (err) {
+    console.error("sendAdminNotification failed:", err);
+  }
+
+  return current;
 }
 
 async function findByToken(token: string): Promise<BookingRow | null> {
@@ -98,6 +167,12 @@ export async function cancelBooking(token: string): Promise<ActionResult> {
   }
 
   try {
+    await sendCancelledSms(updated);
+  } catch (err) {
+    console.error("sendCancelledSms failed:", err);
+  }
+
+  try {
     await sendAdminCancelledNotification(updated);
   } catch (err) {
     console.error("sendAdminCancelledNotification failed:", err);
@@ -165,6 +240,12 @@ export async function rescheduleBooking(
     await sendRescheduledEmail(updated, previousDateLabel, previousTimeLabel);
   } catch (err) {
     console.error("sendRescheduledEmail failed:", err);
+  }
+
+  try {
+    await sendRescheduledSms(updated, previousDateLabel, previousTimeLabel);
+  } catch (err) {
+    console.error("sendRescheduledSms failed:", err);
   }
 
   try {

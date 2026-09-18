@@ -1,5 +1,5 @@
 import "server-only";
-import { env, isGoogleConfigured, readOnlyCalendarIds } from "./env";
+import { env, isGoogleConfigured } from "./env";
 import type { BusyInterval } from "./availability";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -124,8 +124,6 @@ export async function createCalendarEvent(
 export type UpdateEventInput = {
   startsAt: Date;
   endsAt: Date;
-  summary?: string;
-  description?: string;
 };
 
 /** Updates an existing event in place when a booking is rescheduled. */
@@ -135,12 +133,10 @@ export async function updateCalendarEvent(
 ): Promise<void> {
   const accessToken = await getAccessToken();
 
-  const body: Record<string, unknown> = {
+  const body = {
     start: { dateTime: input.startsAt.toISOString() },
     end: { dateTime: input.endsAt.toISOString() },
   };
-  if (input.summary !== undefined) body.summary = input.summary;
-  if (input.description !== undefined) body.description = input.description;
 
   const res = await fetch(
     `${CALENDAR_API}/calendars/${encodeURIComponent(env.bookingCalendarId!)}/events/${eventId}?sendUpdates=all`,
@@ -175,8 +171,4 @@ export async function deleteCalendarEvent(eventId: string): Promise<void> {
   if (!res.ok && res.status !== 410 && res.status !== 404) {
     throw new Error(`Delete calendar event failed: ${res.status} ${await res.text()}`);
   }
-}
-
-export function allReadOnlyCalendarIds(): string[] {
-  return readOnlyCalendarIds();
 }

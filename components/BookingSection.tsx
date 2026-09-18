@@ -4,20 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { config } from "@/lib/config";
 import { glowClass } from "@/lib/glow";
+import type { SlotsByDate } from "@/lib/availability";
+import type { OpenSlotsResult as AvailabilityResponse } from "@/lib/open-slots";
 import { DatePicker } from "./DatePicker";
 import { TimeSlots } from "./TimeSlots";
 import { BookingForm, type BookingFormValues } from "./BookingForm";
 import { SuccessScreen } from "./SuccessScreen";
-
-type SlotsByDate = {
-  date: string;
-  dateLabel: string;
-  slots: { startsAt: string; timeLabel: string }[];
-};
-
-type AvailabilityResponse =
-  | { configured: false }
-  | { configured: true; days: SlotsByDate[] };
 
 type Step = "loading" | "unconfigured" | "picking" | "form" | "success";
 
@@ -64,8 +56,9 @@ export function BookingSection() {
   }
 
   useEffect(() => {
+    // Loading availability on mount is the purpose of this client component.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAvailability();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -114,6 +107,11 @@ export function BookingSection() {
 
       if (!res.ok) {
         setSubmitError(data.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      if (data.checkoutUrl) {
+        window.location.assign(data.checkoutUrl);
         return;
       }
 

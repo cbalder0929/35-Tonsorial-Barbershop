@@ -2,7 +2,7 @@ import { addHours } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { getSupabaseAdmin, type BookingRow } from "@/lib/supabase";
-import { sendReminderEmail } from "@/lib/notifications";
+import { sendReminderEmail, sendReminderSms } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -52,9 +52,15 @@ async function processWindow(win: Window, now: Date) {
 
     try {
       await sendReminderEmail(booking, win.label);
-      sent++;
     } catch (err) {
       console.error(`sendReminderEmail failed for ${booking.id}:`, err);
+    }
+
+    try {
+      await sendReminderSms(booking, win.label);
+      sent++;
+    } catch (err) {
+      console.error(`sendReminderSms failed for ${booking.id}:`, err);
     }
   }
 

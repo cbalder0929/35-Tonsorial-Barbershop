@@ -1,5 +1,6 @@
 import "server-only";
-import { addDays } from "date-fns";
+import { addDays, format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { config } from "./config";
 import {
   generateSlots,
@@ -7,6 +8,7 @@ import {
   removeBookedSlots,
   removeTooSoonSlots,
   groupSlotsByDate,
+  type SlotInterval,
   type SlotsByDate,
 } from "./availability";
 import { isGoogleConfigured, allBusyCalendarIds } from "./env";
@@ -18,16 +20,18 @@ export type OpenSlotsResult =
   | { configured: true; days: SlotsByDate[] };
 
 /**
- * The single authority on what is bookable. Called by both the availability
- * endpoint and the booking endpoint's re-check -- they must never diverge.
+ * The single authority on what is bookable. The availability endpoint
+ * (getOpenSlots) and the booking/reschedule re-check (isSlotStillOpen) both
+ * go through here -- they must never diverge.
  *
  * Pipeline: weekly rules -> theoretical slots -> minus Google busy time
  * -> minus existing bookings -> minus slots inside the notice window.
  */
-export async function getOpenSlots(
+async function computeOpenSlots(
   fromDate: string,
-  days: number
-): Promise<OpenSlotsResult> {
+  days: number,
+  excludeBookingId?: string
+): Promise<SlotInterval[]> {
   const supabase = getSupabaseAdmin();
 
   let slots = generateSlots({
@@ -52,12 +56,18 @@ export async function getOpenSlots(
   const rangeStart = slots[0]?.startsAt ?? new Date();
   const rangeEnd = addDays(rangeStart, days + 1);
 
-  const { data: booked, error } = await supabase
+  let query = supabase
     .from("bookings")
     .select("starts_at")
     .in("status", ["booked", "confirmed"])
     .gte("starts_at", rangeStart.toISOString())
     .lte("starts_at", rangeEnd.toISOString());
+
+  if (excludeBookingId) {
+    query = query.neq("id", excludeBookingId);
+  }
+
+  const { data: booked, error } = await query;
 
   if (error) {
     throw new Error(`Failed to load existing bookings: ${error.message}`);
@@ -67,33 +77,30 @@ export async function getOpenSlots(
   slots = removeBookedSlots(slots, bookedStarts);
   slots = removeTooSoonSlots(slots, new Date(), config.booking.minNoticeHours);
 
+  return slots;
+}
+
+export async function getOpenSlots(
+  fromDate: string,
+  days: number
+): Promise<OpenSlotsResult> {
+  const slots = await computeOpenSlots(fromDate, days);
   return { configured: true, days: groupSlotsByDate(slots, config.timezone) };
 }
 
 /**
- * Re-checks a single slot is still open -- used just before INSERT, and
- * before rescheduling (where excludeBookingId lets a booking ignore its own
- * current slot while checking the new one).
+ * Re-checks a single start time is still bookable -- used just before
+ * INSERT, and before rescheduling (where excludeBookingId lets a booking
+ * ignore its own row while checking the new time). Rejects anything the
+ * availability endpoint wouldn't offer: outside opening hours, off the slot
+ * grid, blocked on Google Calendar, already booked, or too soon.
  */
 export async function isSlotStillOpen(
   startsAtIso: string,
   excludeBookingId?: string
 ): Promise<boolean> {
-  const supabase = getSupabaseAdmin();
-  let query = supabase
-    .from("bookings")
-    .select("id")
-    .eq("starts_at", startsAtIso)
-    .in("status", ["booked", "confirmed"]);
-
-  if (excludeBookingId) {
-    query = query.neq("id", excludeBookingId);
-  }
-
-  const { data, error } = await query.limit(1);
-
-  if (error) {
-    throw new Error(`Failed to re-check slot: ${error.message}`);
-  }
-  return (data ?? []).length === 0;
+  const startsAt = new Date(startsAtIso);
+  const localDate = format(toZonedTime(startsAt, config.timezone), "yyyy-MM-dd");
+  const slots = await computeOpenSlots(localDate, 1, excludeBookingId);
+  return slots.some((slot) => slot.startsAt.getTime() === startsAt.getTime());
 }

@@ -1,8 +1,7 @@
 // Wrapper for every outgoing email. Mirrors the live site's design system
 // (see tailwind.config.ts + app/globals.css): dark navy ground, a crimson
-// accent, royal-blue secondary accent, gold for standout details, cream
-// text, Bebas Neue headlines over Inter body copy. CUSTOMIZE: colours and
-// copy below to re-brand.
+// accent, cream text, Bebas Neue headlines over Inter body copy.
+// CUSTOMIZE: colours and copy below to re-brand.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,10 +14,6 @@ export const BRAND = {
   navy700: "#202b48",
   navy600: "#2c3a5c",
   crimson600: "#93222d",
-  crimson500: "#ac2b38",
-  royal500: "#33518c",
-  royal400: "#4a6bab",
-  gold: "#c9a227",
   cream: "#f7f2e7",
   creamDim: "#c9c2b0",
 };

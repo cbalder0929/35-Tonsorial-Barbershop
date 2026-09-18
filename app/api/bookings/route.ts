@@ -2,13 +2,13 @@ import { randomBytes } from "crypto";
 import { addMinutes } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { isSupabaseConfigured, isGoogleConfigured } from "@/lib/env";
+import { isSupabaseConfigured, isStripeConfigured } from "@/lib/env";
 import { bookingSchema } from "@/lib/validation";
 import { toE164 } from "@/lib/phone";
 import { isSlotStillOpen } from "@/lib/open-slots";
 import { getSupabaseAdmin, type BookingRow } from "@/lib/supabase";
-import { createCalendarEvent } from "@/lib/google-calendar";
-import { sendConfirmationEmail, sendAdminNotification } from "@/lib/notifications";
+import { finalizeConfirmedBooking } from "@/lib/booking-actions";
+import { createCheckoutSession, paymentAmountCents } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +75,8 @@ export async function POST(req: NextRequest) {
       ends_at: endsAt.toISOString(),
       timezone: config.timezone,
       status: "booked",
+      payment_status: "unpaid",
+      payment_amount_cents: null,
       action_token: actionToken,
     })
     .select("*")
@@ -97,48 +99,52 @@ export async function POST(req: NextRequest) {
 
   let booking = data as BookingRow;
 
-  // Steps below are best-effort: failures are logged, never fail the booking.
-  if (isGoogleConfigured()) {
-    try {
-      const eventId = await createCalendarEvent({
-        summary: `${config.business.shortName} -- ${booking.first_name} ${booking.last_name}`,
-        description: [
-          `Service: ${booking.goal ?? "n/a"}`,
-          `Preferred barber: ${booking.preferred_barber ?? "no preference"}`,
-          booking.notes ? `Notes: ${booking.notes}` : null,
-        ]
-          .filter(Boolean)
-          .join("\n"),
-        location: `${config.business.address.line1}, ${config.business.address.line2}`,
-        startsAt,
-        endsAt,
-        attendeeEmail: booking.email,
-        attendeeName: `${booking.first_name} ${booking.last_name}`,
-      });
-
-      const { data: updated } = await supabase
+  // The row above already holds the slot (unique index on starts_at). If a
+  // deposit is required, nothing else happens yet -- no calendar event, no
+  // confirmation email/SMS -- until the Stripe webhook confirms it was paid.
+  // That keeps an abandoned checkout from looking like a real booking.
+  if (isStripeConfigured()) {
+    const checkout = await createCheckoutSession(booking);
+    if (checkout.status === "created") {
+      const { data: updated, error: paymentError } = await supabase
         .from("bookings")
-        .update({ google_event_id: eventId })
+        .update({
+          payment_status: "checkout_created",
+          payment_amount_cents: paymentAmountCents(booking),
+          stripe_checkout_session_id: checkout.sessionId,
+        })
         .eq("id", booking.id)
         .select("*")
         .single();
-      if (updated) booking = updated as BookingRow;
-    } catch (err) {
-      console.error("createCalendarEvent failed:", err);
+
+      if (paymentError) {
+        console.error("Failed to store Stripe checkout session:", paymentError);
+      } else if (updated) {
+        booking = updated as BookingRow;
+      }
+
+      return NextResponse.json({
+        ok: true,
+        checkoutUrl: checkout.url,
+        booking: {
+          id: booking.id,
+          startsAt: booking.starts_at,
+          endsAt: booking.ends_at,
+          actionToken: booking.action_token,
+          paymentStatus: booking.payment_status,
+        },
+      });
     }
+
+    // Stripe hiccuped -- don't strand the customer or the held slot. Fall
+    // back to the pay-at-chair flow below so the appointment still confirms.
+    console.error(
+      "createCheckoutSession failed, falling back to pay-at-chair:",
+      checkout.status === "failed" ? checkout.error : "Stripe not configured"
+    );
   }
 
-  try {
-    await sendConfirmationEmail(booking);
-  } catch (err) {
-    console.error("sendConfirmationEmail failed:", err);
-  }
-
-  try {
-    await sendAdminNotification(booking);
-  } catch (err) {
-    console.error("sendAdminNotification failed:", err);
-  }
+  booking = await finalizeConfirmedBooking(booking);
 
   return NextResponse.json({
     ok: true,
@@ -147,6 +153,7 @@ export async function POST(req: NextRequest) {
       startsAt: booking.starts_at,
       endsAt: booking.ends_at,
       actionToken: booking.action_token,
+      paymentStatus: booking.payment_status,
     },
   });
 }

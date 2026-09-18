@@ -5,9 +5,9 @@
 export type WeeklyRule = {
   /** 0 = Sunday ... 6 = Saturday */
   dayOfWeek: number;
-  /** Local (BUSINESS_TIMEZONE) 24h start time, e.g. "09:00" */
+  /** Local (config.timezone) 24h start time, e.g. "09:00" */
   startTime: string;
-  /** Local (BUSINESS_TIMEZONE) 24h end time, e.g. "19:00" */
+  /** Local (config.timezone) 24h end time, e.g. "19:00" */
   endTime: string;
 };
 
@@ -35,13 +35,17 @@ export const config = {
     { id: "elmer", name: "Elmer" },
   ],
 
-  // IANA timezone -- also set BUSINESS_TIMEZONE in .env.local to match.
+  // IANA timezone for slot generation, labels, and emails.
   timezone: "America/Chicago",
 
   booking: {
     sessionLengthMinutes: 45,
     minNoticeHours: 4,
     maxAdvanceDays: 21,
+    // Fraction of the service price collected as a deposit via Stripe at
+    // booking time. Remainder is due at the chair. Non-refundable if the
+    // customer cancels or no-shows -- see app/terms/page.tsx.
+    depositPercent: 0.5,
     weeklyRules: [
       { dayOfWeek: 0, startTime: "09:00", endTime: "12:00" }, // Sun
       { dayOfWeek: 1, startTime: "10:00", endTime: "18:00" }, // Mon
@@ -73,8 +77,6 @@ export const config = {
   copy: {
     hero: {
       tagline: "Tradition. Craftsmanship. Confidence.",
-      ctaLabel: "Book Now",
-      secondaryCtaLabel: "View Pricing",
     },
     faqs: [
       {
@@ -103,7 +105,8 @@ export const config = {
       },
       {
         question: "What payment methods are accepted?",
-        answer: "Card or cash, paid at the chair after your service.",
+        answer:
+          "A 50% deposit is charged securely through Stripe when you book online -- the rest is due at the chair by card or cash. Deposits are non-refundable for cancellations or no-shows, but carry over automatically if you reschedule instead.",
       },
       {
         question: "Do you offer beard services?",
@@ -150,6 +153,3 @@ export function formatWeeklyHours(
   }
   return lines;
 }
-
-export type PricingItem = (typeof config.pricing)[number];
-export type TeamMember = (typeof config.team)[number];

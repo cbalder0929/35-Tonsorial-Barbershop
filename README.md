@@ -58,10 +58,9 @@ Create your private settings file:
 
     Copy-Item .env.example .env.local
 
-Fill in the three required Supabase values in **.env.local**, then run the SQL in **supabase/schema.sql** inside **Supabase → SQL Editor**.
+Fill in the two required Supabase values in **.env.local**, then run the SQL in **supabase/schema.sql** inside **Supabase → SQL Editor**.
 
     NEXT_PUBLIC_SUPABASE_URL=
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=
     SUPABASE_SERVICE_ROLE_KEY=
 
 Start the website:
@@ -76,7 +75,9 @@ Then open [http://localhost:3000](http://localhost:3000).
 | --- | --- | --- |
 | Google Calendar | Stop calendar conflicts from appearing as bookable and add bookings to a calendar. | Set the Google variables and **BOOKING_CALENDAR_ID**, then run **npm run google-token** to create the refresh token. **SCHOOL_CALENDAR_ID**, **WORK_CALENDAR_ID**, and **PERSONAL_CALENDAR_ID** only block availability. |
 | Resend | Send booking, change, cancellation, and reminder emails. | Set **RESEND_API_KEY**, **FROM_EMAIL**, and optionally **OWNER_NOTIFICATION_EMAIL**. |
-| Reminders | Email customers 24 hours, 2 hours, and 1 hour before their appointment. | Schedule a secure POST request to **/api/cron/reminders** with the authorization header Bearer + your **CRON_SECRET**. |
+| Stripe | Collect online payment after a booking is created. | Set **STRIPE_SECRET_KEY**, **STRIPE_WEBHOOK_SECRET**, and add a webhook pointing to **/api/webhooks/stripe**. |
+| Twilio SMS | Send customer text confirmations/reminders and owner text alerts. | Set **TWILIO_ACCOUNT_SID**, **TWILIO_AUTH_TOKEN**, and either **TWILIO_MESSAGING_SERVICE_SID** or **TWILIO_FROM_PHONE**. Set **TRAINER_PHONE** for owner alerts. |
+| Reminders | Email and text customers 24 hours, 2 hours, and 1 hour before their appointment. | Schedule a secure POST request to **/api/cron/reminders** with the authorization header Bearer + your **CRON_SECRET**. |
 
 **Important:** An appointment can still be saved when Google Calendar or email are not configured. Supabase is the one required piece—the appointment book must exist before the front desk can take appointments.
 
@@ -143,8 +144,8 @@ stateDiagram-v2
 
 | Area | Primary file(s) | Notes |
 | --- | --- | --- |
-| Business details and availability rules | **lib/config.ts** | Preferred location for hours, services, staff, copy, and prices. Keep BUSINESS_TIMEZONE aligned with config.timezone. |
-| Booking API | **app/api/bookings/route.ts** | Validates input, checks availability, inserts the row, then runs calendar/email work without blocking the response. |
+| Business details and availability rules | **lib/config.ts** | Preferred location for hours, services, staff, copy, prices, and the business timezone. |
+| Booking API | **app/api/bookings/route.ts** | Validates input, checks availability, inserts the row, then runs calendar/email/SMS/payment work without blocking the response. |
 | Availability | **lib/availability.ts**, **lib/open-slots.ts**, **app/api/availability/route.ts** | Keep slot calculation pure where possible; account for calendar, database, notice-period, and advance-window constraints. |
 | Customer actions | **app/confirmed/[token]/page.tsx**, **app/cancel/[token]/page.tsx**, **app/api/bookings/[token]/** | Tokens locate appointments for confirmation, rescheduling, and cancellation. |
 | Emails | **emails/**, **lib/notifications.ts**, **lib/email.ts** | Treat email sending as optional and non-fatal. |
@@ -157,10 +158,12 @@ Use **.env.example** as the source of truth.
 
 | Group | Variables | Required |
 | --- | --- | --- |
-| Appointment book | NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY | Yes |
-| Site/runtime | NEXT_PUBLIC_SITE_URL, BUSINESS_TIMEZONE, TRAINER_PHONE, CRON_SECRET | Set appropriately for deployment; cron needs CRON_SECRET. |
+| Appointment book | NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY | Yes |
+| Site/runtime | NEXT_PUBLIC_SITE_URL, TRAINER_PHONE, CRON_SECRET | Set appropriately for deployment; cron needs CRON_SECRET. |
 | Calendar | GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, BOOKING_CALENDAR_ID, SCHOOL_CALENDAR_ID, WORK_CALENDAR_ID, PERSONAL_CALENDAR_ID | Optional |
 | Email | RESEND_API_KEY, FROM_EMAIL, OWNER_NOTIFICATION_EMAIL | Optional |
+| Payments | STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET | Optional |
+| SMS | TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_MESSAGING_SERVICE_SID, TWILIO_FROM_PHONE | Optional |
 
 ### Commands
 

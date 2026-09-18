@@ -18,14 +18,20 @@ export default function TermsPage() {
           </p>
           <h2 className="text-lg font-semibold text-cream">Appointments &amp; Payment</h2>
           <p>
-            Prices are listed on our pricing page and are due at the chair, by card or cash.
-            Please arrive on time -- arrivals more than 10 minutes late may need to be
-            rescheduled to protect the next client&rsquo;s time.
+            Prices are listed on our pricing page. When online payment is enabled, a 50% deposit
+            is collected through Stripe Checkout when you book, and the remaining balance is due
+            at the chair by card or cash. When online payment is not enabled, the full price is
+            due at the chair. Please arrive on time -- arrivals more than 10 minutes late may
+            need to be rescheduled to protect the next client&rsquo;s time.
           </p>
-          <h2 className="text-lg font-semibold text-cream">Cancellations</h2>
+          <h2 className="text-lg font-semibold text-cream">Cancellations &amp; Deposits</h2>
           <p>
             Cancel or reschedule any time before your appointment using the link in your
-            confirmation email. This immediately frees the slot for another client.
+            confirmation email. Rescheduling keeps your deposit applied to the new time at no
+            extra charge. Deposits are non-refundable if you cancel outright or don&rsquo;t show
+            up -- this is what lets us hold that time for you instead of offering it to someone
+            else. If we need to cancel or cannot honor your appointment, your deposit is
+            refunded in full.
           </p>
           <h2 className="text-lg font-semibold text-cream">Communications</h2>
           <p>

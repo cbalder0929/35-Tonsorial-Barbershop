@@ -35,12 +35,13 @@ export type BookingRow = {
   timezone: string;
   status: "booked" | "confirmed" | "completed" | "cancelled" | "no_show";
   google_event_id: string | null;
-  confirmation_sent_at: string | null;
-  admin_notified_at: string | null;
+  payment_status: "unpaid" | "checkout_created" | "paid" | "failed" | "refunded";
+  payment_amount_cents: number | null;
+  stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
   reminder_24h_sent_at: string | null;
   reminder_1h_sent_at: string | null;
   reminder_2h_sent_at: string | null;
-  followup_sent_at: string | null;
   confirmed_at: string | null;
   cancelled_at: string | null;
   action_token: string;

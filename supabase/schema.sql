@@ -22,12 +22,14 @@ create table if not exists bookings (
   status                 text not null default 'booked'
                            check (status in ('booked','confirmed','completed','cancelled','no_show')),
   google_event_id        text,
-  confirmation_sent_at   timestamptz,
-  admin_notified_at      timestamptz,
+  payment_status         text not null default 'unpaid'
+                           check (payment_status in ('unpaid','checkout_created','paid','failed','refunded')),
+  payment_amount_cents   integer,
+  stripe_checkout_session_id text,
+  stripe_payment_intent_id   text,
   reminder_24h_sent_at   timestamptz,
   reminder_1h_sent_at    timestamptz,
   reminder_2h_sent_at    timestamptz,
-  followup_sent_at       timestamptz,
   confirmed_at           timestamptz,
   cancelled_at           timestamptz,
   action_token           text not null unique
@@ -53,9 +55,10 @@ create unique index if not exists one_booking_per_slot
 create index if not exists bookings_upcoming
   on bookings (starts_at, status);
 
--- For confirm/cancel link lookups.
-create index if not exists bookings_action_token
-  on bookings (action_token);
+-- One booking per Stripe Checkout session; also serves /payment/success lookups.
+create unique index if not exists bookings_stripe_checkout_session_unique
+  on bookings (stripe_checkout_session_id)
+  where stripe_checkout_session_id is not null;
 
 -- Row Level Security: the anon key gets no policies. All reads and writes
 -- go through API routes using the service role key, server-side only.

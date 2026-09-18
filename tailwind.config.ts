@@ -4,10 +4,13 @@ import type { Config } from "tailwindcss";
 // a restrained blue accent, and warm off-white. Sampled to complement the
 // 35TonsorialLogo emblem without competing with it.
 const config: Config = {
+  // lib/glow.ts is listed because it holds the btn-glow-{n} class names; the
+  // rest of lib/ and emails/ are excluded so words in their comments and
+  // inline-styled HTML (e.g. "container", "transition") don't ship dead CSS.
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
-    "./emails/**/*.{ts,tsx}",
+    "./lib/glow.ts",
   ],
   theme: {
     extend: {
@@ -15,7 +18,6 @@ const config: Config = {
         navy: {
           950: "#0c101c",
           900: "#131b30",
-          800: "#1c2740",
           700: "#283454",
           600: "#34426a",
         },
@@ -26,14 +28,9 @@ const config: Config = {
           400: "#c2434f",
         },
         royal: {
-          600: "#25406e",
-          500: "#33518c",
           400: "#4a6bab",
         },
-        gold: {
-          DEFAULT: "#c9a227",
-          light: "#ddc167",
-        },
+        gold: "#c9a227",
         cream: {
           DEFAULT: "#f7f2e7",
           dim: "#c9c2b0",

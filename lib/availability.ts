@@ -1,11 +1,11 @@
 // Pure slot generation. No database, no network, no hidden `new Date()`.
 // Everything arrives as an argument -- this is what makes timezone and DST
-// tests possible. Both the availability endpoint and the booking endpoint
-// call getOpenSlots() (in open-slots.ts) which wraps generateSlots() below.
+// tests possible. The availability endpoint and the booking/reschedule
+// re-checks all go through open-slots.ts, which wraps generateSlots() below.
 
 import { addDays, addMinutes, format, isBefore } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
-import { config, type WeeklyRule } from "./config";
+import type { WeeklyRule } from "./config";
 
 export type SlotInterval = {
   /** UTC instant */
@@ -131,14 +131,4 @@ export function groupSlotsByDate(
   return Array.from(byDate.values()).sort((a, b) =>
     a.date.localeCompare(b.date)
   );
-}
-
-export function defaultGenerateSlots(fromDate: string, days: number) {
-  return generateSlots({
-    fromDate,
-    days,
-    weeklyRules: config.booking.weeklyRules,
-    sessionLengthMinutes: config.booking.sessionLengthMinutes,
-    timezone: config.timezone,
-  });
 }

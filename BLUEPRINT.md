@@ -129,12 +129,9 @@ Two tables. Run this in the Supabase SQL editor.
 | `timezone` | `text` | prospect's timezone for display |
 | `status` | `text` | `booked` → `confirmed` → `completed` / `cancelled` / `no_show` |
 | `google_event_id` | `text` | for calendar deletion on cancel |
-| `confirmation_sent_at` | `timestamptz` | prevents double-send |
-| `admin_notified_at` | `timestamptz` | prevents double-send |
 | `reminder_24h_sent_at` | `timestamptz` | prevents double-send |
 | `reminder_1h_sent_at` | `timestamptz` | prevents double-send |
 | `reminder_2h_sent_at` | `timestamptz` | prevents double-send |
-| `followup_sent_at` | `timestamptz` | prevents double-send |
 | `confirmed_at` | `timestamptz` | when prospect confirmed |
 | `cancelled_at` | `timestamptz` | when prospect cancelled |
 | `action_token` | `text` UNIQUE | 16 random bytes hex-encoded — used in confirm/cancel links |
@@ -162,10 +159,9 @@ CREATE UNIQUE INDEX one_booking_per_slot
 
 -- For the cron queries
 CREATE INDEX bookings_upcoming ON bookings (starts_at, status);
-
--- For confirm/cancel link lookups
-CREATE INDEX bookings_action_token ON bookings (action_token);
 ```
+
+Confirm/cancel link lookups use the index Postgres builds automatically for `action_token`'s `UNIQUE` constraint.
 
 ### Row Level Security
 
@@ -189,7 +185,6 @@ your-booking-site/
 │       ├── availability/route.ts       # GET → open slots for a date range
 │       ├── bookings/route.ts           # POST → create booking + side effects
 │       ├── bookings/[token]/
-│       │   ├── confirm/route.ts        # POST → mark confirmed
 │       │   └── cancel/route.ts         # POST → cancel + free slot
 │       └── cron/
 │           └── reminders/route.ts      # Hourly: 24h, 2h, 1h reminders
@@ -243,11 +238,10 @@ your-booking-site/
 │   └── google-refresh-token.mjs        # One-time OAuth token minting
 │
 ├── public/
-│   ├── bg.jpg                          # ← CUSTOMIZE: background image
+│   ├── logo.png                        # ← CUSTOMIZE: logo (hero, footer, social preview)
 │   └── headshot.png                    # ← CUSTOMIZE: provider headshot
 │
 ├── tailwind.config.ts                  # ← CUSTOMIZE: colour palette
-├── vercel.json                         # Cron job definitions
 ├── package.json
 ├── tsconfig.json
 └── .env.example
@@ -262,7 +256,6 @@ Create `.env.local` from `.env.example`. These same values must be added manuall
 ```bash
 # --- Required (nothing works without these) ---
 NEXT_PUBLIC_SUPABASE_URL=               # Supabase dashboard → Project Settings → API
-NEXT_PUBLIC_SUPABASE_ANON_KEY=          # Same location
 SUPABASE_SERVICE_ROLE_KEY=              # Same location — NEVER expose to browser
 
 # --- Google Calendar (optional — bookings save without it) ---
@@ -279,7 +272,6 @@ FROM_EMAIL=                             # Leave blank for sandbox mode
 
 # --- App ---
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-BUSINESS_TIMEZONE=America/Chicago       # Your IANA timezone
 TRAINER_PHONE=                          # For admin notifications
 CRON_SECRET=                            # Random 16+ char string for cron auth
 ```
@@ -453,7 +445,6 @@ Each module has a single responsibility. Dependencies flow one way.
 |---|---|---|
 | `/api/availability` | GET | Returns open slots. Query: `from` (YYYY-MM-DD), `days` (1–60). Returns `{ configured: false }` if Supabase not set up. |
 | `/api/bookings` | POST | Creates booking. Body: form fields + `startsAt` (ISO UTC). Returns booking summary + `actionToken`. |
-| `/api/bookings/[token]/confirm` | POST | Marks booking as confirmed. Idempotent. |
 | `/api/bookings/[token]/cancel` | POST | Cancels booking, deletes calendar event. Idempotent. |
 | `/api/cron/reminders` | POST | Protected by `CRON_SECRET`. Sends 24h, 2h, 1h reminders. Idempotent via timestamp columns. |
 
@@ -475,15 +466,7 @@ Emails are plain HTML strings built in TypeScript functions. No React Email — 
 
 ## 13. Cron Jobs
 
-Defined in `vercel.json`:
-
-```json
-{
-  "crons": [
-    { "path": "/api/cron/reminders", "schedule": "0 * * * *" }
-  ]
-}
-```
+Schedule an hourly `POST` to `/api/cron/reminders` from any external scheduler, sending `Authorization: Bearer <CRON_SECRET>`. (Vercel Cron can't call it directly -- it sends `GET` requests, and this route only accepts `POST`.)
 
 The reminders endpoint runs hourly and checks for bookings in three windows:
 
@@ -559,7 +542,7 @@ To adapt this system for a different brand, you only need to change these files:
 | `lib/config.ts` | Business name, owner name, phone, email, address, timezone, availability hours, session length, goal/experience options, FAQ content, "what's included" copy |
 | `tailwind.config.ts` | Colour palette (replace the sampled-from-image colours with your brand colours) |
 | `app/globals.css` | Gradient definitions in `.text-facet`, `.btn-primary`, `.rule-facet` — update to your palette |
-| `public/bg.jpg` | Background image |
+| `public/logo.png` | Logo (hero, footer, social preview) |
 | `public/headshot.png` | Provider photo |
 | `emails/shell.ts` | Email header/footer branding, colours |
 | `.env.example` | Update comments/defaults for your business |
@@ -612,7 +595,6 @@ To adapt this system for a different brand, you only need to change these files:
 2. Go to SQL Editor → paste and run `supabase/schema.sql`
 3. Go to Project Settings → API → copy:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon` public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `service_role` secret key → `SUPABASE_SERVICE_ROLE_KEY`
 4. `npm run dev` — page should load with "Online booking opens shortly" (no availability rules in DB yet, but no error)
 
@@ -730,7 +712,7 @@ These are designed into the schema but not yet built:
 |---|---|---|
 | **SMS confirmations (Twilio)** | `sms_consent`, `consent_ip`, `consent_at` columns exist | Add `lib/sms.ts`, Twilio webhook at `/api/webhooks/twilio`, A2P 10DLC registration |
 | **2-way SMS confirm/cancel** | `booking-actions.ts` already has `confirmBooking()` / `cancelBooking()` | Webhook parses Y/C/STOP replies and calls existing functions |
-| **Post-session follow-up** | `followup_sent_at` column exists | Daily cron job, follow-up email template |
+| **Post-session follow-up** | — | `followup_sent_at` column, daily cron job, follow-up email template |
 | **Admin dashboard** | All data is in Supabase | Protected route at `/admin` with booking list, status updates, blackout management |
 | **Rescheduling** | — | Cancel + rebook flow, or dedicated reschedule endpoint |
 | **Waitlist** | — | New table, notification when slot opens |

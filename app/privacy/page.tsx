@@ -25,7 +25,8 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold text-cream">How we use it</h2>
           <p>
             To confirm and manage your appointment, send reminders, and, if you opt in, send SMS
-            appointment reminders. We do not sell your information.
+            appointment reminders. Payment details are handled by Stripe when online payment is
+            enabled; we do not store full card numbers. We do not sell your information.
           </p>
           <h2 className="text-lg font-semibold text-cream">SMS communications</h2>
           <p>

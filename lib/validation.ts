@@ -19,13 +19,9 @@ export const bookingSchema = z.object({
   honeypot: z.string().max(0, "").optional().or(z.literal("")),
 });
 
-export type BookingInput = z.infer<typeof bookingSchema>;
-
 export const rescheduleSchema = z.object({
   startsAt: z.string().datetime({ message: "Invalid time slot" }),
 });
-
-export type RescheduleInput = z.infer<typeof rescheduleSchema>;
 
 export const availabilityQuerySchema = z.object({
   from: z
@@ -33,5 +29,3 @@ export const availabilityQuerySchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "from must be YYYY-MM-DD"),
   days: z.coerce.number().int().min(1).max(60).default(14),
 });
-
-export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;

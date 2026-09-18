@@ -7,7 +7,6 @@ function read(name: string): string | undefined {
 
 export const env = {
   supabaseUrl: read("NEXT_PUBLIC_SUPABASE_URL"),
-  supabaseAnonKey: read("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
   supabaseServiceRoleKey: read("SUPABASE_SERVICE_ROLE_KEY"),
 
   googleClientId: read("GOOGLE_CLIENT_ID"),
@@ -22,16 +21,21 @@ export const env = {
   fromEmail: read("FROM_EMAIL"),
   ownerNotificationEmail: read("OWNER_NOTIFICATION_EMAIL"),
 
+  stripeSecretKey: read("STRIPE_SECRET_KEY"),
+  stripeWebhookSecret: read("STRIPE_WEBHOOK_SECRET"),
+
+  twilioAccountSid: read("TWILIO_ACCOUNT_SID"),
+  twilioAuthToken: read("TWILIO_AUTH_TOKEN"),
+  twilioMessagingServiceSid: read("TWILIO_MESSAGING_SERVICE_SID"),
+  twilioFromPhone: read("TWILIO_FROM_PHONE"),
+
   siteUrl: read("NEXT_PUBLIC_SITE_URL") ?? "http://localhost:3000",
-  businessTimezone: read("BUSINESS_TIMEZONE") ?? "America/Chicago",
   trainerPhone: read("TRAINER_PHONE"),
   cronSecret: read("CRON_SECRET"),
 };
 
 export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    env.supabaseUrl && env.supabaseAnonKey && env.supabaseServiceRoleKey
-  );
+  return Boolean(env.supabaseUrl && env.supabaseServiceRoleKey);
 }
 
 export function isGoogleConfigured(): boolean {
@@ -47,7 +51,19 @@ export function isResendConfigured(): boolean {
   return Boolean(env.resendApiKey);
 }
 
-export function readOnlyCalendarIds(): string[] {
+export function isStripeConfigured(): boolean {
+  return Boolean(env.stripeSecretKey);
+}
+
+export function isTwilioConfigured(): boolean {
+  return Boolean(
+    env.twilioAccountSid &&
+      env.twilioAuthToken &&
+      (env.twilioMessagingServiceSid || env.twilioFromPhone)
+  );
+}
+
+function readOnlyCalendarIds(): string[] {
   return [env.schoolCalendarId, env.workCalendarId, env.personalCalendarId].filter(
     (id): id is string => Boolean(id)
   );
