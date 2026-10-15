@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { BookingSection } from "@/components/BookingSection";
 import { GoogleReviews } from "@/components/GoogleReviews";
@@ -9,7 +8,6 @@ import { Footer } from "@/components/Footer";
 export default function Home() {
   return (
     <main>
-      <Header />
       <Hero />
       <BookingSection />
       <GoogleReviews />

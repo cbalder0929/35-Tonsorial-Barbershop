@@ -130,12 +130,8 @@ export function BookingSection() {
   }
 
   return (
-    <section id="booking" ref={sectionRef} className="section-pad scroll-mt-24 py-8 sm:py-12">
+    <section id="booking" ref={sectionRef} className="section-pad scroll-mt-24 pb-8 pt-6 sm:pb-12 sm:pt-56 md:pt-28">
       <span className="rule-facet mb-5" />
-      <h2 className="font-display text-3xl uppercase tracking-wide text-cream sm:text-4xl">
-        Book Your Haircut
-      </h2>
-
       <div className="mt-8">
         {step === "loading" && <BookingSkeleton />}
 
@@ -153,7 +149,10 @@ export function BookingSection() {
 
         {(step === "picking" || step === "form") && (
           <div className="card-glass p-5 sm:p-8">
-            {loadError && <p className="mb-4 text-sm text-crimson-400">{loadError}</p>}
+            <h2 className="mb-6 font-display text-3xl uppercase tracking-wide text-cream sm:text-4xl">
+              Schedule
+            </h2>
+            {loadError &&<p className="mb-4 text-sm text-crimson-400">{loadError}</p>}
 
             <BookingStep label="1. Service">
               <PillGroup
@@ -164,8 +163,9 @@ export function BookingSection() {
               />
             </BookingStep>
 
-            {service && (
-              <BookingStep label="2. Barber" className="step-enter">
+            {/* Steps 2-4 reveal progressively on mobile; laptop/desktop (md+) shows them all. */}
+            {(
+              <BookingStep label="2. Barber" className={service ? "step-enter" : "hidden md:block"}>
                 <PillGroup
                   options={[
                     { value: NO_PREFERENCE, label: "No Preference" },
@@ -178,8 +178,8 @@ export function BookingSection() {
               </BookingStep>
             )}
 
-            {service && barber && (
-              <div className="step-enter">
+            {(
+              <div className={service && barber ? "step-enter" : "hidden md:block"}>
                 {days.length === 0 ? (
                   <p className="py-6 text-center text-cream-dim">
                     No open times in the next {config.booking.maxAdvanceDays} days -- check back
@@ -200,18 +200,27 @@ export function BookingSection() {
                       />
                     </BookingStep>
 
-                    {selectedDate && (
-                      <BookingStep label="4. Time" className="step-enter">
-                        <TimeSlots
-                          slots={timeSlots}
-                          selectedStartsAt={selectedStartsAt}
-                          onSelect={(startsAt) => {
-                            setSelectedStartsAt(startsAt);
-                            setStep("form");
-                            setSubmitError(null);
-                          }}
-                          glow={glowLevel}
-                        />
+                    {(
+                      <BookingStep
+                        label="4. Time"
+                        className={selectedDate ? "step-enter" : "hidden md:block"}
+                      >
+                        {selectedDate ? (
+                          <TimeSlots
+                            slots={timeSlots}
+                            selectedStartsAt={selectedStartsAt}
+                            onSelect={(startsAt) => {
+                              setSelectedStartsAt(startsAt);
+                              setStep("form");
+                              setSubmitError(null);
+                            }}
+                            glow={glowLevel}
+                          />
+                        ) : (
+                          <p className="py-6 text-center text-sm text-cream-dim">
+                            Pick a date to see open times.
+                          </p>
+                        )}
                       </BookingStep>
                     )}
 

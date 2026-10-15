@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: config.business.name,
     description: config.copy.hero.tagline,
-    images: ["/logo.png"],
+    images: ["/HeroLogo35.png"],
   },
 };
 

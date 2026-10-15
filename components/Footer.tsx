@@ -7,23 +7,25 @@ export function Footer() {
   const hours = formatWeeklyHours();
 
   return (
-    <footer id="contact" className="border-t border-navy-700/80 bg-navy-950 py-12">
+    <footer id="contact" className="border-t border-navy-700/80 bg-navy-950/70 py-12">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-5 px-5 text-center sm:px-8">
         <Image
-          src="/logo.png"
+          src="/HeroLogo35.png"
           alt={`${config.business.name} logo`}
-          width={1536}
-          height={1024}
-          className="w-28 opacity-90 sm:w-32"
+          width={2172}
+          height={724}
+          className="w-56 sm:w-72"
         />
 
         <div>
-          <p className="font-display text-xl uppercase tracking-wide text-cream">
-            {config.business.name}
-          </p>
-          <p className="mt-1 text-sm text-cream-dim">
+          <a
+            href={config.business.address.mapsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm text-cream-dim hover:text-cream"
+          >
             {config.business.address.line1}, {config.business.address.line2}
-          </p>
+          </a>
         </div>
 
         <div className="flex flex-col gap-1 text-sm text-cream-dim sm:flex-row sm:gap-6">

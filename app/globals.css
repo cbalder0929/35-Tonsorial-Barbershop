@@ -9,24 +9,48 @@
 
   body {
     @apply font-body;
-    color: #f7f2e7;
-    background-color: #0c101c;
-    /* Subtle depth + a faint diagonal texture -- a quiet nod to barber-pole
-       stripes without competing with the logo or turning into clutter. */
-    background-image: radial-gradient(
-        ellipse 900px 500px at 50% -10%,
-        rgba(52, 66, 106, 0.5) 0%,
-        rgba(12, 16, 28, 0) 60%
+    color: #ffffff;
+    background-color: #8a0a0a;
+    /* Photo background with a light dark tint so text stays readable. */
+    background-image: linear-gradient(
+        rgba(40, 0, 0, 0.25),
+        rgba(40, 0, 0, 0.25)
       ),
-      repeating-linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.02) 0px,
-        rgba(255, 255, 255, 0.02) 2px,
-        transparent 2px,
-        transparent 16px
-      );
+      url("/background.png");
     background-attachment: fixed;
     background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* iOS/Android ignore background-attachment: fixed (it zooms the image to the
+     full page height), so pin the photo to a fixed layer behind the page. */
+  @media (max-width: 639px) {
+    body {
+      background-image: none;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      /* Largest viewport height so the image still covers the screen when the
+         mobile browser toolbar collapses. */
+      height: 100vh;
+      height: 100lvh;
+      z-index: -1;
+      background-image: linear-gradient(
+          rgba(40, 0, 0, 0.25),
+          rgba(40, 0, 0, 0.25)
+        ),
+        url("/background.png");
+      background-size: cover;
+      background-position: 40% center;
+      pointer-events: none;
+      background-repeat: no-repeat;
+    }
   }
 }
 
@@ -65,29 +89,29 @@
   }
 
   .btn-glow-1 {
-    box-shadow: 0 0 10px 0 rgba(147, 34, 45, 0.35);
+    box-shadow: 0 0 10px 0 rgba(217, 0, 0, 0.35);
   }
 
   .btn-glow-2 {
-    box-shadow: 0 0 16px 1px rgba(147, 34, 45, 0.45);
+    box-shadow: 0 0 16px 1px rgba(217, 0, 0, 0.45);
   }
 
   .btn-glow-3 {
-    box-shadow: 0 0 22px 2px rgba(147, 34, 45, 0.55);
+    box-shadow: 0 0 22px 2px rgba(217, 0, 0, 0.55);
   }
 
   .btn-glow-4 {
-    box-shadow: 0 0 30px 4px rgba(147, 34, 45, 0.65);
+    box-shadow: 0 0 30px 4px rgba(217, 0, 0, 0.65);
   }
 
   .btn-glow-5 {
-    box-shadow: 0 0 42px 6px rgba(147, 34, 45, 0.8);
+    box-shadow: 0 0 42px 6px rgba(217, 0, 0, 0.8);
   }
 
   /* Primary CTA -- solid crimson, the site's one loud color. */
   .btn-primary {
     @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-crimson-600
-      px-7 py-3 text-sm font-bold text-cream shadow-glow transition-colors
+      px-7 py-3 text-sm font-bold text-cream shadow-glow border border-white/25 transition-colors
       duration-200 hover:bg-crimson-500 active:bg-crimson-700;
   }
 

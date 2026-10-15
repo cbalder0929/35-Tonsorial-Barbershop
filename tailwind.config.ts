@@ -1,8 +1,7 @@
 import type { Config } from "tailwindcss";
 
-// Traditional American barbershop palette: deep navy, barber-pole crimson,
-// a restrained blue accent, and warm off-white. Sampled to complement the
-// 35TonsorialLogo emblem without competing with it.
+// Palette sampled from the 35th Tonsorial logos and red marble background:
+// logo red, black, and white. (Token names kept from the old navy/blue theme.)
 const config: Config = {
   // lib/glow.ts is listed because it holds the btn-glow-{n} class names; the
   // rest of lib/ and emails/ are excluded so words in their comments and
@@ -16,24 +15,25 @@ const config: Config = {
     extend: {
       colors: {
         navy: {
-          950: "#0c101c",
-          900: "#131b30",
-          700: "#283454",
-          600: "#34426a",
+          950: "#000000",
+          900: "#000000",
+          700: "#3a3a3a",
+          600: "#555555",
         },
         crimson: {
-          700: "#6f1a24",
-          600: "#93222d",
-          500: "#ac2b38",
-          400: "#c2434f",
+          700: "#a30000",
+          600: "#d90000",
+          500: "#ec1c1c",
+          400: "#ff5a5a",
         },
+        // Accent now white (from the logo's lettering) instead of blue.
         royal: {
-          400: "#4a6bab",
+          400: "#ffffff",
         },
-        gold: "#c9a227",
+        gold: "#ffffff",
         cream: {
-          DEFAULT: "#f7f2e7",
-          dim: "#c9c2b0",
+          DEFAULT: "#ffffff",
+          dim: "#d9d4d4",
         },
       },
       fontFamily: {
@@ -41,7 +41,7 @@ const config: Config = {
         body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        glow: "0 8px 30px -8px rgba(147, 34, 45, 0.55)",
+        glow: "0 8px 30px -8px rgba(217, 0, 0, 0.55)",
       },
     },
   },

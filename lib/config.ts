@@ -25,7 +25,7 @@ export const config = {
     },
     // From the shop's Google Business listing.
     googleRating: 5.0,
-    googleReviewCount: 14,
+    googleReviewCount: 93,
   },
 
   // The barbers clients ask for by name (per Google reviews).

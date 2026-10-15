@@ -1,6 +1,6 @@
 // Wrapper for every outgoing email. Mirrors the live site's design system
-// (see tailwind.config.ts + app/globals.css): dark navy ground, a crimson
-// accent, cream text, Bebas Neue headlines over Inter body copy.
+// (see tailwind.config.ts + app/globals.css): black card on a red ground, a logo-red
+// accent, white text, Bebas Neue headlines over Inter body copy.
 // CUSTOMIZE: colours and copy below to re-brand.
 
 import { readFileSync } from "node:fs";
@@ -8,18 +8,16 @@ import { join } from "node:path";
 import { config } from "@/lib/config";
 
 export const BRAND = {
-  navy950: "#080b14",
-  navy900: "#0e1526",
-  navy800: "#151f38",
-  navy700: "#202b48",
-  navy600: "#2c3a5c",
-  crimson600: "#93222d",
-  cream: "#f7f2e7",
-  creamDim: "#c9c2b0",
+  navy950: "#000000",
+  navy900: "#0a0a0a",
+  navy800: "#161616",
+  navy700: "#3a3a3a",
+  navy600: "#555555",
+  crimson600: "#d90000",
+  cream: "#ffffff",
+  creamDim: "#d9d4d4",
 };
 
-const DISPLAY_FONT =
-  "'Bebas Neue','Arial Narrow',Arial,sans-serif";
 const BODY_FONT =
   "-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif";
 
@@ -57,18 +55,15 @@ export function emailShell(bodyHtml: string): string {
       }
     </style>
   </head>
-  <body style="margin:0;padding:0;background:${BRAND.navy950};font-family:${BODY_FONT};">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.navy950};padding:36px 16px;">
+  <body style="margin:0;padding:0;background:#8a0a0a;font-family:${BODY_FONT};">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#8a0a0a;padding:36px 16px;">
       <tr>
         <td align="center">
           <table role="presentation" class="container" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:560px;background:${BRAND.navy900};border-radius:16px;overflow:hidden;border:1px solid ${BRAND.navy700};">
             <tr>
               <td align="center" style="padding:32px 32px 24px;background:${BRAND.navy950};border-bottom:1px solid ${BRAND.navy700};">
-                <img src="cid:${LOGO_CID}" width="96" height="64" alt="${config.business.name}" style="display:block;margin:0 auto 12px;border:0;object-fit:contain;" />
-                <div style="font-family:${DISPLAY_FONT};text-transform:uppercase;letter-spacing:0.04em;font-size:22px;color:${BRAND.cream};">
-                  ${config.business.name}
-                </div>
-                <div style="width:44px;height:3px;background:${BRAND.crimson600};border-radius:999px;margin:12px auto 0;"></div>
+                <img src="cid:${LOGO_CID}" width="300" height="100" alt="${config.business.name}" style="display:block;margin:0 auto;border:0;object-fit:contain;" />
+                <div style="width:44px;height:3px;background:${BRAND.crimson600};border-radius:999px;margin:14px auto 0;"></div>
               </td>
             </tr>
             <tr>
