@@ -74,6 +74,7 @@ export function BookingSection() {
 
   const activeDay = days.find((d) => d.date === selectedDate);
   const timeSlots = activeDay?.slots ?? [];
+  const selectedBarber = config.team.find((t) => t.id === barber) ?? null;
   const selectedServiceName = config.pricing.find((p) => p.id === service)?.name;
 
   const glowLevel =
@@ -175,6 +176,7 @@ export function BookingSection() {
                   onChange={setBarber}
                   glow={glowLevel}
                 />
+                {selectedBarber && <BarberInfo barber={selectedBarber} />}
               </BookingStep>
             )}
 
@@ -221,6 +223,15 @@ export function BookingSection() {
                             Pick a date to see open times.
                           </p>
                         )}
+                        {selectedDate && selectedBarber && (
+                          <p className="mt-3 text-sm text-cream-dim">
+                            {selectedBarber.name} takes about {selectedBarber.minutesPerCut} min
+                            per haircut. Walk-ins / questions:{" "}
+                            <a href={`tel:${selectedBarber.phone}`} className="text-royal-400">
+                              {selectedBarber.phoneDisplay}
+                            </a>
+                          </p>
+                        )}
                       </BookingStep>
                     )}
 
@@ -260,6 +271,37 @@ export function BookingSection() {
         )}
       </div>
     </section>
+  );
+}
+
+function BarberInfo({ barber }: { barber: (typeof config.team)[number] }) {
+  return (
+    <div className="mt-4 rounded-xl border border-navy-600 bg-navy-900/60 p-4 text-sm text-cream-dim">
+      <p className="mb-2 font-semibold uppercase tracking-wide text-cream">Days &amp; Hours</p>
+      <ul className="mb-3 space-y-1">
+        {barber.schedule.map((row) => (
+          <li key={row.days} className="flex justify-between gap-4">
+            <span>{row.days}</span>
+            <span className={row.hours === "Off" ? "text-crimson-400" : "text-cream"}>
+              {row.hours}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {barber.note && <p className="mb-3">{barber.note}</p>}
+      <p>{barber.minutesPerCut} minutes per haircut</p>
+      <p>
+        Walk-ins:{" "}
+        <a href={`tel:${barber.phone}`} className="text-royal-400">
+          {barber.phoneDisplay}
+        </a>
+      </p>
+      <p>
+        <a href={`mailto:${barber.email}`} className="text-royal-400">
+          {barber.email}
+        </a>
+      </p>
+    </div>
   );
 }
 

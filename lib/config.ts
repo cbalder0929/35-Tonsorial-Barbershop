@@ -28,11 +28,71 @@ export const config = {
     googleReviewCount: 93,
   },
 
-  // The barbers clients ask for by name (per Google reviews).
+  // Barbers, their weekly schedules (display only), and contact info.
+  // Phone numbers are for walk-ins.
   team: [
-    { id: "uriel", name: "Uriel" },
-    { id: "jose", name: "Jose" },
-    { id: "elmer", name: "Elmer" },
+    {
+      id: "adrian",
+      name: "Adrian",
+      phone: "+13125814152",
+      phoneDisplay: "(312) 581-4152",
+      email: "aadriansal06@gmail.com",
+      minutesPerCut: 45,
+      note: "",
+      schedule: [
+        { days: "Monday", hours: "Off" },
+        { days: "Tuesday", hours: "10AM-7PM" },
+        { days: "Wednesday-Friday", hours: "10AM-4PM" },
+        { days: "Saturday", hours: "9AM-4PM" },
+        { days: "Sunday", hours: "9AM-12PM" },
+      ],
+    },
+    {
+      id: "christian",
+      name: "Christian",
+      phone: "+13126477577",
+      phoneDisplay: "(312) 647-7577",
+      email: "8afadezz@gmail.com",
+      minutesPerCut: 45,
+      note: "Appointments start 3:30PM, 4:15PM, 5:00PM, and so on.",
+      schedule: [
+        { days: "Monday-Thursday", hours: "3:30PM-6:30PM" },
+        { days: "Friday", hours: "3:30PM-7PM" },
+        { days: "Saturday", hours: "9AM-4PM" },
+        { days: "Sunday", hours: "Off" },
+      ],
+    },
+    {
+      id: "elmer",
+      name: "Elmer",
+      phone: "+13129374411",
+      phoneDisplay: "+1 (312) 937-4411",
+      email: "Elmercutz_1@yahoo.com",
+      minutesPerCut: 45,
+      note: "",
+      schedule: [
+        { days: "Monday", hours: "Off" },
+        { days: "Tuesday-Friday", hours: "4PM-6:30PM" },
+        { days: "Saturday", hours: "9AM-4PM" },
+        { days: "Sunday", hours: "9AM-1PM" },
+      ],
+    },
+    {
+      id: "jose",
+      name: "Jose A. (Owner)",
+      phone: "+17738154663",
+      phoneDisplay: "(773) 815-4663",
+      email: "35thtonsorialbarbershop@gmail.com",
+      minutesPerCut: 30,
+      note: "Appointments only Thursday-Saturday. Sunday hours alternate: one week open, one week off.",
+      schedule: [
+        { days: "Monday-Wednesday", hours: "10AM-2:30PM" },
+        { days: "Thursday", hours: "10AM-6:30PM" },
+        { days: "Friday", hours: "9AM-6:30PM" },
+        { days: "Saturday", hours: "9AM-4PM" },
+        { days: "Sunday", hours: "9AM-12PM (every other week)" },
+      ],
+    },
   ],
 
   // IANA timezone for slot generation, labels, and emails.
