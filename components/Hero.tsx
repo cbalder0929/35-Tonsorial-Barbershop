@@ -2,7 +2,7 @@ import Image from "next/image";
 import { config } from "@/lib/config";
 
 // Mobile: the logo is the centerpiece of the Hero -- do not redraw, distort,
-// or swap it. It floats with a drop shadow for depth.
+// or swap it. 
 // Laptop/desktop (md and up): no hero section; the footer logo is pinned to
 // the top-left corner instead.
 export function Hero() {
@@ -13,7 +13,7 @@ export function Hero() {
         alt={`${config.business.name} logo`}
         width={2172}
         height={724}
-        className="fixed left-4 top-3 z-40 hidden w-[264px] drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)] md:block"
+        className="fixed left-4 top-3 z-40 hidden w-[264px] md:block"
       />
       <section id="hero" className="relative overflow-hidden px-5 pb-6 pt-6 sm:px-8 sm:pb-10 sm:pt-8 md:hidden">
         <div className="relative mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -24,7 +24,7 @@ export function Hero() {
               width={2172}
               height={724}
               priority
-              className="w-full max-w-[340px] drop-shadow-[0_18px_40px_rgba(0,0,0,0.6)] sm:max-w-[520px]"
+              className="w-full max-w-[340px] sm:max-w-[520px]"
             />
           </div>
         </div>
